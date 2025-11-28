@@ -7,6 +7,29 @@ var app= express()
 app.use(express.json())
 app.use(cors());
 
+app.post("/login", function (req, resp) {
+const username = req.body.username;
+const password = req.body.password;
+
+
+  connection.query(
+    "SELECT * FROM `flipkart`.`users` WHERE Username = ? AND Password = ?",
+    [username, password],
+    function (err, result) {
+      if (err) {
+        console.log("Login query failed", err);
+        resp.send({  message: "Server error"  });
+      } else if (result.length > 0) {
+        console.log("Login successful", result);
+        resp.send({  message: "Login successful", success: result });
+      } else {
+        console.log("Wrong username or password");
+        resp.send({  message: "Wrong username or passwordss" });
+      } 
+    }
+  );
+});
+
 
 // Delete all records
 app.delete("/deleteAll", function (req, resp) {
@@ -37,20 +60,22 @@ app.get("/fetch",function(req,resp){
 
 
 app.post("/insert", function(req, resp) {
-    connection.query(
-        "INSERT INTO `flipkart`.`data` (`Name`, `Phone`, `Address`) VALUES (?, ?, ?)",
-        [req.body.Name, req.body.Phone, req.body.Address],
-        function(err, result) {
-            if (err) {
-                console.log("Data is not inserted", err);
-                resp.send("Data is not inserted");
-            } else {
-                console.log("Data is inserted successfully", result);
-                resp.send({ message: "Data is inserted", data: result });
-            }
-        }
-    );
+  connection.query(
+    "INSERT INTO `flipkart`.`data` (`Name`, `Phone`, `Address`) VALUES (?, ?, ?)",
+    [req.body.Name, req.body.Phone, req.body.Address],
+    function(err, result) {
+      if (err) {
+        console.log({ message: "Data is not inserted", error: err });
+        // Always send valid JSON
+        resp.send({ message: "Data is not inserted", error: err });
+      } else {
+        console.log({ message: "Data is inserted", data: result });
+        resp.send({ message: "Data is inserted", data: result });
+      }
+    }
+  );
 });
+
 
 
 
@@ -96,6 +121,6 @@ app.put("/update/:id", function (req, resp) {
 
 
 
-app.listen(3000,function(){
+app.listen(process.env.PORT || 3000,function(){
     console.log("server start successfully at port 3000")
 })  
